@@ -239,7 +239,7 @@ exports.postCreateAccount = (req,res)=>{
 
                 console.log("Result obtained from query and result length is",result,result.length);
 
-                res.render("/create-emp");
+                res.render("/create-employee");
             }
         );
     });
@@ -252,23 +252,142 @@ exports.createEmployee = (req,res)=>{
 exports.employees = (req,res)=>{
     let FirstName = req.session.FirstName;
     let LastName = req.session.LastName;
-    res.render("employees",{FirstName,LastName});
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table1};`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("Result obtained from query and result length is",result,result.length);
+
+                res.render("employees",{FirstName,LastName,result});
+            }
+        );
+    });
 }
 
 exports.vehicles = (req,res)=>{
-    res.render("vehicles");
+    let FirstName = req.session.FirstName;
+    let LastName = req.session.LastName;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table3};`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("Result obtained from query and result length is",result,result.length);
+
+                res.render("vehicles",{FirstName,LastName,result});
+            }
+        );
+    });
 }
 
 exports.sales = (req,res)=>{
-    res.render("sales");
+    let FirstName = req.session.FirstName;
+    let LastName = req.session.LastName;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        let sqlQuery = 
+        `SELECT v.Model AS VehicleModel,
+        v.Manufacturer AS VehicleManufacturer,
+        e.FirstName AS EmployeeFirstName,
+        e.LastName AS EmployeeLastName,
+        c.FirstName AS CustomerFirstName,
+        c.LastName AS CustomerLastName,
+        s.SaleDate,
+        s.SaleAmount
+    FROM
+        Sales s
+    INNER JOIN
+        Vehicles v ON s.VehicleID = v.VehicleID
+    INNER JOIN
+        Employees e ON s.EmployeeID = e.EmployeeID
+    INNER JOIN
+        Customers c ON s.CustomerID = c.CustomerID;
+    `;
+    let queryWithoutNewlines = sqlQuery.replace(/\n/g, "");
+    console.log(queryWithoutNewlines);
+
+        connection.query(
+            queryWithoutNewlines,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("Result obtained from query and result length is",result,result.length);
+
+                res.render("sales",{FirstName,LastName,result});
+            }
+        );
+    });
 }
 
 exports.customers = (req,res)=>{
-    res.render("customers");
-}
+    let FirstName = req.session.FirstName;
+    let LastName = req.session.LastName;
 
-exports.tables = (req,res)=>{
-    res.render("tables");
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table2};`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("Result obtained from query and result length is",result,result.length);
+
+                res.render("customers",{FirstName,LastName,result});
+            }
+        );
+    });
 }
 
 exports.error = (req,res)=>{

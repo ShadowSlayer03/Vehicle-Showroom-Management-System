@@ -13,18 +13,17 @@ router.get("/logout",mainController.logout);
 router.get("/create-account",mainController.createAccount);
 router.post("/create-account",mainController.postCreateAccount);
 
-router.get("/create-emp",mainController.createEmployee);
+router.get("/create-employee",mainController.createEmployee);
+// router.get("/edit-employee/:id",mainController.editEmployee);
+// router.get("/delete-employee/:id",mainController.deleteEmployee);
 
-router.get("/employees",mainController.employees);
+router.get("/employees",requireLogin,mainController.employees);
 
-router.get("/vehicles",mainController.vehicles);
+router.get("/vehicles",requireLogin,mainController.vehicles);
 
-router.get("/sales",mainController.sales);
+router.get("/sales",requireLogin,mainController.sales);
 
-router.get("/customers",mainController.customers);
-
-router.get("/tables",mainController.tables);
-
+router.get("/customers",requireLogin,mainController.customers);
 
 router.get("*",mainController.error);
 
