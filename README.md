@@ -6,11 +6,13 @@ This project implements a web application for managing a vehicle showroom, utili
 
 This application facilitates managing various aspects of a vehicle showroom, including:
 
-* **Vehicles:** CRUD operations (create, read, update, delete) for vehicle information like make, model, year, price, features, and images.
+* **Vehicles:** CRUD operations (create, read, update, delete) for vehicle information like make, model, year, price.
 * **Customers:** Management of customer details such as name, contact information, and purchase history.
-* **Sales:** Recording vehicle sales, encompassing customer information, vehicle details, sale price, and date.
-* **Inventory:** Tracking current and sold vehicles, identifying low-stock items, and generating reports.
-* **Users:** Management of user accounts with varying access levels for enhanced security.
+* **Sales:** Recording vehicle sales, encompassing customer information, vehicle details, sale price, and sale date.
+* **Employees:** Management of employee accounts storing info like their name, phone, email, password, position and salary.
+
+## Live Preview
+This DBMS project is hosted at [https://autohub-pro.onrender.com](https://autohub-pro.onrender.com).
 
 ## Technologies Used
 
@@ -26,9 +28,9 @@ This application facilitates managing various aspects of a vehicle showroom, inc
 ## Project Setup
 
 1. Install Node.js and npm (Node Package Manager) on your system.
-2. Clone this repository: `git clone https://github.com/your_username/vehicle-showroom-app.git`
+2. Clone this repository: `https://github.com/ShadowSlayer03/Vehicle-Showroom-Management-System.git`
 3. Install all project dependencies: `npm install`
-4. Configure database connection details in the `config.js` file, specifying database credentials and connection options.
+4. Configure database connection details in the `.env` file, specifying database credentials and connection options.
 5. Start the server: `npm start`
 
 ## Features Implemented
@@ -38,13 +40,6 @@ This application facilitates managing various aspects of a vehicle showroom, inc
 * Basic search and filtering functionalities for efficient data retrieval.
 * Generation of inventory management reports to track stock levels and identify low-stock items.
 * Sales reports and dashboards providing insights into sales performance and trends.
-
-## Additional Notes
-
-* This readme serves as a foundation, and the implemented features can be further expanded based on your specific requirements and vision.
-* Incorporating documentation within individual modules and code comments significantly improves code readability and maintainability.
-* Implementing unit and integration tests enhances code quality and ensures functionality.
-* Leveraging advanced CSS practices and frontend frameworks can elevate the user interface and user experience.
 
 ## Contribution
 
