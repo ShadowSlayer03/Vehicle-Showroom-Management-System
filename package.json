@@ -1,17 +1,19 @@
 {
   "name": "vehicle-showroom-management-system",
   "version": "1.0.2",
-  "description": "A vehicle management system project with MySQL",
+  "description": "A vehicle management system project with MySQL, ExpressJS, EJS",
   "main": "server.js",
   "scripts": {
     "tailwind": "tailwindcss build public/assets/css/tailwind.css -o public/assets/css/tailwind.output.css",
     "build": "env NODE_ENV=production postcss public/assets/css/tailwind.css -o public/assets/css/tailwind.output.css",
     "cz": "git-cz",
-    "release": "release-it"
+    "release": "release-it",
+    "start": "node server.js"
   },
   "author": "Arjun RN, Anthony Naveen",
   "license": "MIT",
   "keywords": [
+    "autohub",
     "vehicle",
     "management",
     "system",
