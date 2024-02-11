@@ -425,14 +425,14 @@ exports.addVehicle = (req,res)=>{
         console.log('Connected to DB as ID ' + connection.threadId);
 
         connection.query(
-            `SELECT COUNT(*) AS MaxCount FROM ${table3};`,
+            `SELECT MAX(VehicleID) AS MaxVehicleID FROM ${table3};`,
             (err, result, fields) => {
                 connection.release();
                 if (err) {
                     console.error('Error querying the database:', err);
                     return res.status(500).send('Internal server error');
                 }
-                let vehicleID = result[0].MaxCount;
+                let vehicleID = result[0].MaxVehicleID;
                 res.render("add-vehicle",{Model: undefined, Manufacturer: undefined, VehicleYear: undefined, Price: undefined, VehicleID: vehicleID+1, pageTitle: "Add Vehicle", heading: "Add Vehicle"});
             }
         );
@@ -578,14 +578,14 @@ exports.addCustomer = (req,res)=>{
         console.log('Connected to DB as ID ' + connection.threadId);
 
         connection.query(
-            `SELECT COUNT(*) AS MaxCount FROM ${table2};`,
+            `SELECT MAX(CustomerID) AS MaxCustomerID FROM ${table2};`,
             (err, result, fields) => {
                 connection.release();
                 if (err) {
                     console.error('Error querying the database:', err);
                     return res.status(500).send('Internal server error');
                 }
-                let customerID = result[0].MaxCount;
+                let customerID = result[0].MaxCustomerID;
                 res.render("add-customer",{FirstName: undefined, LastName: undefined, Email: undefined, Phone: undefined, Address: undefined, CustomerID: customerID+1, pageTitle: "Add Customer", heading: "Add Customer"});
             }
         );
@@ -718,7 +718,273 @@ exports.customers = (req,res)=>{
     });
 }
 
+///////////////
+// Sales //
+/////////////
 
+var saleID, custValues, vehicleValues, empValues;
+exports.addSale = (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT MAX(SaleID) AS MaxSaleID FROM ${table4};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                saleID = result[0].MaxSaleID;
+
+                // Nested getConnection call
+                pool.getConnection((err, connection) => {
+                    if (err) {
+                        console.error('Error connecting to the database:', err);
+                        return res.status(500).send('Internal server error');
+                    }
+
+                    console.log('Connected to DB as ID ' + connection.threadId);
+
+                    connection.query(
+                        `SELECT CustomerID FROM ${table2} WHERE Status='active';`,
+                        (err, result, fields) => {
+                            connection.release();
+                            if (err) {
+                                console.error('Error querying the database:', err);
+                                return res.status(500).send('Internal server error');
+                            }
+                            console.log("Result and result length are", result, result.length);
+                            custValues = result;
+
+                            // Another nested getConnection call
+                            pool.getConnection((err, connection) => {
+                                if (err) {
+                                    console.error('Error connecting to the database:', err);
+                                    return res.status(500).send('Internal server error');
+                                }
+
+                                console.log('Connected to DB as ID ' + connection.threadId);
+
+                                connection.query(
+                                    `SELECT VehicleID FROM ${table3} WHERE Status='active';`,
+                                    (err, result, fields) => {
+                                        connection.release();
+                                        if (err) {
+                                            console.error('Error querying the database:', err);
+                                            return res.status(500).send('Internal server error');
+                                        }
+                                        console.log("Result and result length are", result, result.length);
+                                        vehicleValues = result;
+
+                                        // Another nested getConnection call
+                                        pool.getConnection((err, connection) => {
+                                            if (err) {
+                                                console.error('Error connecting to the database:', err);
+                                                return res.status(500).send('Internal server error');
+                                            }
+
+                                            console.log('Connected to DB as ID ' + connection.threadId);
+
+                                            connection.query(
+                                                `SELECT EmployeeID FROM ${table1} WHERE Status='active';`,
+                                                (err, result, fields) => {
+                                                    connection.release();
+                                                    if (err) {
+                                                        console.error('Error querying the database:', err);
+                                                        return res.status(500).send('Internal server error');
+                                                    }
+                                                    console.log("Result and result length are", result, result.length);
+                                                    empValues = result;
+
+                                                    // Once all queries are done, you can send the response
+                                                    res.render("add-sale",{SaleID: saleID+1, custValues, vehicleValues, empValues, SaleDate: undefined, SaleAmount: undefined, pageTitle: "Add Sale", heading: "Add Sale"})
+                                                }
+                                            );
+                                        });
+                                    }
+                                );
+                            });
+                        }
+                    );
+                });
+            }
+        );
+    });
+};
+
+
+exports.postAddSale = (req,res)=>{
+
+    let { CustomerID, VehicleID, EmployeeID, SaleDate, SaleAmount } = req.body;
+    let fromEditSale = req.session.fromEditSale;
+    let saleID = req.session.saleID;
+
+    if (!fromEditSale) {
+        sqlQuery = `INSERT INTO ${table4} (CustomerID, VehicleID, EmployeeID, SaleDate, SaleAmount) VALUES (?, ?, ?, ?,?)`;
+        queryParams = [CustomerID, VehicleID, EmployeeID, SaleDate, SaleAmount];
+    } else {
+        sqlQuery = `UPDATE ${table4}
+                    SET CustomerID=?, VehicleID=?, EmployeeID=?, SaleDate=?, SaleAmount = ?
+                    WHERE SaleID=?`;
+        queryParams = [CustomerID, VehicleID, EmployeeID, SaleDate, SaleAmount, saleID];
+    }
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            sqlQuery,
+            queryParams,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                res.redirect("/sales");
+            }
+        );
+    });
+}
+
+// Show the Edit Sale Page
+exports.editSale = (req,res)=>{
+    let saleID = req.params.id;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * FROM ${table4} WHERE SaleID = ${saleID};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                console.log("This is result and result length",result,result.length);
+                const {SaleID, CustomerID, VehicleID, EmployeeID, SaleDate, SaleAmount} = result[0];
+                req.session.saleID = SaleID;
+                req.session.fromEditSale = true; 
+
+                // Nested getConnection call
+                pool.getConnection((err, connection) => {
+                    if (err) {
+                        console.error('Error connecting to the database:', err);
+                        return res.status(500).send('Internal server error');
+                    }
+
+                    console.log('Connected to DB as ID ' + connection.threadId);
+
+                    connection.query(
+                        `SELECT CustomerID FROM ${table2} WHERE Status='active';`,
+                        (err, result, fields) => {
+                            connection.release();
+                            if (err) {
+                                console.error('Error querying the database:', err);
+                                return res.status(500).send('Internal server error');
+                            }
+                            console.log("Result and result length are", result, result.length);
+                            custValues = result;
+
+                            // Another nested getConnection call
+                            pool.getConnection((err, connection) => {
+                                if (err) {
+                                    console.error('Error connecting to the database:', err);
+                                    return res.status(500).send('Internal server error');
+                                }
+
+                                console.log('Connected to DB as ID ' + connection.threadId);
+
+                                connection.query(
+                                    `SELECT VehicleID FROM ${table3} WHERE Status='active';`,
+                                    (err, result, fields) => {
+                                        connection.release();
+                                        if (err) {
+                                            console.error('Error querying the database:', err);
+                                            return res.status(500).send('Internal server error');
+                                        }
+                                        console.log("Result and result length are", result, result.length);
+                                        vehicleValues = result;
+
+                                        // Another nested getConnection call
+                                        pool.getConnection((err, connection) => {
+                                            if (err) {
+                                                console.error('Error connecting to the database:', err);
+                                                return res.status(500).send('Internal server error');
+                                            }
+
+                                            console.log('Connected to DB as ID ' + connection.threadId);
+
+                                            connection.query(
+                                                `SELECT EmployeeID FROM ${table1} WHERE Status='active';`,
+                                                (err, result, fields) => {
+                                                    connection.release();
+                                                    if (err) {
+                                                        console.error('Error querying the database:', err);
+                                                        return res.status(500).send('Internal server error');
+                                                    }
+                                                    console.log("Result and result length are", result, result.length);
+                                                    empValues = result;
+
+                                                    // Once all queries are done, you can send the response
+                                                    res.render("add-sale",{SaleID, CustomerID, VehicleID, EmployeeID, custValues, vehicleValues, empValues, SaleDate, SaleAmount, pageTitle: "Edit Sale", heading: "Edit Sale"})
+                                                }
+                                            );
+                                        });
+                                    }
+                                );
+                            });
+                        }
+                    );
+                });
+            }
+        );
+
+    });
+}
+
+exports.deleteSale = (req,res)=>{
+    let saleID = req.params.id;
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `UPDATE ${table4} SET Status = 'cancelled' WHERE SaleID = ${saleID};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                res.redirect("/sales");
+            }
+        );
+    });
+}
 
 exports.sales = (req,res)=>{
     let FirstName = req.session.FirstName;
@@ -739,17 +1005,14 @@ exports.sales = (req,res)=>{
         e.LastName AS EmployeeLastName,
         c.FirstName AS CustomerFirstName,
         c.LastName AS CustomerLastName,
+        s.SaleID,
         s.SaleDate,
         s.SaleAmount
-    FROM
-        Sales s
-    INNER JOIN
-        Vehicles v ON s.VehicleID = v.VehicleID
-    INNER JOIN
-        Employees e ON s.EmployeeID = e.EmployeeID
-    INNER JOIN
-        Customers c ON s.CustomerID = c.CustomerID;
-    `;
+        FROM Sales s
+        INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
+        INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
+        INNER JOIN Customers c ON s.CustomerID = c.CustomerID
+        WHERE s.Status = 'confirmed';`;
     let queryWithoutNewlines = sqlQuery.replace(/\n/g, "");
     console.log(queryWithoutNewlines);
 
@@ -771,6 +1034,12 @@ exports.sales = (req,res)=>{
     });
 }
 
+///////////////
+// Error //
+/////////////
+
 exports.error = (req,res)=>{
-    res.render("404",{pageTitle: 'Page Not Found'});
+    let FirstName = req.session.FirstName;
+    let LastName = req.session.LastName;
+    res.render("404",{FirstName, LastName, pageTitle: 'Page Not Found'});
 }

@@ -31,6 +31,12 @@ router.post("/add-customer",mainController.postAddCustomer);
 router.get("/edit-customer/:id",mainController.editCustomer);
 router.get("/delete-customer/:id",mainController.deleteCustomer);
 
+router.get("/add-sale",mainController.addSale);
+router.post("/add-sale",mainController.postAddSale);
+
+router.get("/edit-sale/:id",mainController.editSale);
+router.get("/delete-sale/:id",mainController.deleteSale);
+
 router.get("/employees",requireLogin,mainController.employees);
 router.get("/vehicles",requireLogin,mainController.vehicles);
 router.get("/sales",requireLogin,mainController.sales);
