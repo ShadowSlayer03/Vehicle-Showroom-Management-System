@@ -1,8 +1,8 @@
-# Vehicle Showroom Management Web App 🔥📝
+# Vehicle Showroom Management Web App 🚗📝
 
 This project implements a web application for managing a vehicle showroom, utilizing MySQL, EJS, CSS, JavaScript, and ExpressJS.
 
-## Project Description
+## Project Description 📝
 
 This application facilitates managing various aspects of a vehicle showroom, including:
 
@@ -11,10 +11,10 @@ This application facilitates managing various aspects of a vehicle showroom, inc
 * **Sales:** Recording vehicle sales, encompassing customer information, vehicle details, sale price, and sale date.
 * **Employees:** Management of employee accounts storing info like their name, phone, email, password, position and salary.
 
-## Live Preview
+## Live Preview 🌟
 This DBMS project is hosted at [https://autohub-pro.onrender.com](https://autohub-pro.onrender.com).
 
-## Technologies Used
+## Technologies Used 🚀
 
 * **Backend:**
     * MySQL: Relational database management system for data storage.
@@ -25,7 +25,7 @@ This DBMS project is hosted at [https://autohub-pro.onrender.com](https://autohu
     * CSS: Stylesheets for defining the visual presentation of the application.
     * JavaScript: Interactive elements and dynamic behaviors on the user interface.
 
-## Project Setup
+## Project Setup ⚙️
 
 1. Install Node.js and npm (Node Package Manager) on your system.
 2. Clone this repository: `https://github.com/ShadowSlayer03/Vehicle-Showroom-Management-System.git`
@@ -33,7 +33,7 @@ This DBMS project is hosted at [https://autohub-pro.onrender.com](https://autohu
 4. Configure database connection details in the `.env` file, specifying database credentials and connection options.
 5. Start the server: `npm start`
 
-## Features Implemented
+## Features Implemented 🔥
 
 * CRUD operations for managing vehicles, customers, and sales data.
 * Authentication and authorization system with distinct user roles and access permissions.
