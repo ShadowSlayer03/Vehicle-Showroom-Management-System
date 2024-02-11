@@ -1,11 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Employee | AutoHub Pro</title>
-</head>
-<body>
-    
-</body>
-</html>
+    <div
+      class="flex h-screen bg-gray-50 dark:bg-gray-900"
+      :class="{ 'overflow-hidden': isSideMenuOpen }"
+    >      
+      <div class="flex flex-col flex-1 w-full">
+        <main class="h-full overflow-y-auto">
+          <div class="container flex flex-col mx-auto items-center" style="margin-bottom: 4vw; padding: 0 3vw;">
+            <h2
+              class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
+            >
+              <%= heading %>
+            </h2>
+            <!-- CTA -->
+            <a
+              class="flex items-center justify-between w-full p-4 mb-8 text-sm font-semibold text-purple-100 bg-purple-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple"
+              href="https://github.com/ShadowSlayer03/Vehicle-Showroom-Management-System"
+            >
+              <div class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                  ></path>
+                </svg>
+                <span>Star this project on GitHub</span>
+              </div>
+              <span>View more &RightArrow;</span>
+            </a>
+            <h4
+            class="underline mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300"
+          >
+            Enter Your Details:
+          </h4>
+          <div class="w-full h-fit p-1 bg-gray-700 shadow-lg">
+            <form action="/create-employee" method="POST" id="myForm">
+            <div class="w-[100%] px-10 py-3 bg-white rounded-lg shadow-xl dark:bg-gray-800">
+              <div class="w-full flex" style="gap: 5vw;">
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">First Name</span>
+                  <% if(FirstName){ %>
+                  <input name="FirstName" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" value="<%= FirstName%>">
+                  <% } else{ %>
+                    <input name="FirstName" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
+                  <% } %>  
+                </label>
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">Last Name</span>
+                  <% if(LastName){ %>
+                    <input name="LastName" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" value="<%= LastName%>">
+                  <% } else{ %>
+                      <input name="LastName" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
+                  <% } %>
+                </label>
+              </div>
+
+
+              <div class="w-full flex mt-4" style="gap: 5vw;">
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">Employee ID</span>
+                  <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" placeholder="<%= EmployeeID%>" readonly>
+                </label>
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">Email</span>
+                  <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" placeholder="<%= Email%>" readonly>
+                </label>
+              </div>  
+
+              <label class="block mt-4 text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                  Phone
+                </span>
+                <div class="block w-[50%] mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray">
+                  <% if(Phone){ %>
+                  <input name="Phone" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" value="<%= Phone%>">
+                  <% } else{ %>
+                    <input name="Phone" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
+                  <% } %>  
+                </div>
+              </label>
+
+              <div class="w-full flex mt-4" style="gap: 5vw;">
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">Position</span>
+                  <% if(Position){ %>
+                  <input name="Position" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" value="<%= Position%>">
+                  <% } else{ %>
+                    <input name="Position" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
+                  <% } %>
+                </label>
+                <label class="block text-sm" style="width: 50%;">
+                  <span class="text-gray-700 dark:text-gray-400">Salary</span>
+                  <% if(Salary){ %>
+                  <input name="Salary" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" value="<%= Salary%>">
+                  <% } else{ %>
+                    <input name="Salary" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
+                  <% } %>  
+                </label>
+              </div>
+
+              <label class="block mt-4 text-sm">
+                <span class="text-gray-700 dark:text-gray-400">Address</span>
+                <% if (Address) { %>
+                  <textarea name="Address" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-textarea focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray" rows="3" placeholder="Enter your full address here."><%= Address %></textarea>
+                <% } else{ %>
+                <textarea name="Address" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-textarea focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray" rows="3" placeholder="Enter your full address here."></textarea>
+                <% } %>
+              </label>
+
+              <div class="flex mt-6 text-sm">
+                <label class="flex items-center dark:text-gray-400">
+                  <input id="checkbox" type="checkbox" class="text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray">
+                  <span class="ml-2">
+                    I agree to the
+                    <a id="downloadLink" class="underline" href="#" download="Terms_and_Conditions.txt">Terms and Conditions for Work</a>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+            <button id="submit-button" type="submit" class="block px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple" style="width: 20%; opacity: 0.5; cursor:not-allowed">
+            Submit
+            </button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="/assets/js/create-employee.js"></script>
+
+

@@ -1,12 +1,10 @@
 require('dotenv').config();
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
-const { connect } = require('../routes/manage.routes');
 const table1 = "employees";
 const table2 = "customers";
 const table3 = "vehicles";
 const table4 = "sales";
-const table5 = "maintenance";
 const table6 = "login";
 
 let pool = mysql.createPool({
@@ -139,7 +137,8 @@ exports.home = (req, res) => {
                                                     employeeCount,
                                                     vehicleCount,
                                                     saleCount,
-                                                    customerCount
+                                                    customerCount,
+                                                    pageTitle: 'Dashboard'
                                                 });
                                             }
                                         );
@@ -158,7 +157,7 @@ exports.login = (req,res)=>{
     if(req.session.loggedIn)
     res.redirect("/");
     else
-    res.render("login",{errorHeading: undefined,errorMesg: undefined});
+    res.render("login",{errorHeading: undefined,errorMesg: undefined, pageTitle: 'Login'});
 }
 
 exports.postLogin = (req, res) => {
@@ -188,11 +187,12 @@ exports.postLogin = (req, res) => {
                 if (result.length === 0 || !bcrypt.compareSync(password, result[0].Password)) {
                     // Invalid credentials
                     console.log("Invalid Email or Password");
-                    res.render("login",{errorHeading: "User not Found!",errorMesg: "This user does not exist. Try creating a new account!"});
+                    res.render("login",{errorHeading: "User not Found!",errorMesg: "This user does not exist. Try creating a new account!",pageTitle: 'Login'});
                 }
                 else{
                     req.session.loggedIn = true;
-                    req.session.emailVal = email;
+                    req.session.emailVal = result[0].Email;
+                    req.session.employeeID = result[0].EmployeeID;
                     res.redirect('/');
                 }
             }
@@ -207,17 +207,41 @@ exports.logout = (req, res) => {
             res.status(500).send('Internal Server Error');
             return;
         }
-        res.render('login',{errorHeading: "Logged Out!",errorMesg: "You have logged out successfully."});
+        res.render('login',{errorHeading: "Logged Out!",errorMesg: "You have logged out successfully.", pageTitle: 'Login'});
     });
 };
 
-// Test createAccount and postCreateAccount after creating the create-employee.ejs.
-exports.createAccount = (req,res)=>{
-    res.render("create-account");
+///////////////
+// Employees //
+/////////////
+// To add a new employee from dashboard
+exports.createEmployee = (req,res)=>{
+    let Email = req.session.emailVal;
+    let EmployeeID = req.session.employeeID;
+    res.render("create-employee",{EmployeeID, FirstName:undefined,LastName:undefined,Email,Address:undefined,Phone:undefined,Position:undefined,Salary:undefined, pageTitle: 'Create Employee',heading: "Create Employee"});
 }
 
-exports.postCreateAccount = (req,res)=>{
-    const { email, password } = req.body;
+exports.postCreateEmployee = (req, res) => {
+    let fromCreateAccount = req.session.fromCreateAccount;
+    let email = req.session.emailVal;
+    let employeeID = req.session.employeeID;
+    let { FirstName, LastName, Phone, Position, Salary, Address } = req.body;
+
+    let sqlQuery;
+    let queryParams;
+
+    console.log("The req.body",req.body);
+
+    if (fromCreateAccount) {
+        sqlQuery = `INSERT INTO ${table1} (FirstName, LastName, Email, Address, Phone, Position, Salary) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        queryParams = [FirstName, LastName, email, Address, Phone, Position, Salary];
+    } else {
+        sqlQuery = `UPDATE ${table1}
+                    SET FirstName=?, LastName=?, Phone=?, position=?, salary=?, address=?
+                    WHERE EmployeeID=?`;
+        queryParams = [FirstName, LastName, Phone, Position, Salary, Address, employeeID];
+    }
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -228,7 +252,63 @@ exports.postCreateAccount = (req,res)=>{
         console.log('Connected to DB as ID ' + connection.threadId);
 
         connection.query(
-            `INSERT INTO ${table6} (email,password) VALUES('${email}','${password}');`,
+            sqlQuery,
+            queryParams,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                if (fromCreateAccount) {
+                    console.log("Inserted record Successfully");
+                    res.render("login", { errorHeading: "Successful!", errorMesg: "Your details were added successfully.",pageTitle: "Login" });
+                } else {
+                    res.redirect("/employees");
+                }
+            }
+        );
+    });
+}
+
+
+exports.createAccount = (req,res)=>{
+    res.render("create-account",{pageTitle: 'Create Account'});
+}
+
+exports.postCreateAccount = (req,res)=>{
+    const { email, password } = req.body;
+
+    const hashPassword = (password) => {
+        return bcrypt.hashSync(password, 10);
+    }
+        
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        let hashedPassword = hashPassword(password);
+
+        connection.query(
+            `INSERT INTO ${table6} (email,password) VALUES('${email}','${hashedPassword}');`,
+            (err, result, fields) => {
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+            }
+        );
+
+        connection.query(
+            `SELECT * FROM ${table6} WHERE Email='${email}' AND Password='${password}';`,
             (err, result, fields) => {
                 connection.release();
 
@@ -238,15 +318,68 @@ exports.postCreateAccount = (req,res)=>{
                 }
 
                 console.log("Result obtained from query and result length is",result,result.length);
-
-                res.render("/create-employee");
+                req.session.emailVal = result[0].Email;
+                req.session.employeeID = result[0].EmployeeID;
+                req.session.fromCreateAccount = true;
+                res.redirect("/create-employee");
             }
         );
     });
 }
 
-exports.createEmployee = (req,res)=>{
-    res.render("create-employee");
+// Shows the Edit Employee Page
+exports.editEmployee = (req,res)=>{
+    let empID = req.params.id;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * FROM ${table1} WHERE EmployeeID = ${empID}`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("This is result and result length",result,result.length);
+                const {EmployeeID, FirstName,LastName,Email,Address,Phone,Position,Salary} = result[0];
+                res.render("create-employee",{EmployeeID, FirstName,LastName,Email,Address,Phone,Position,Salary, pageTitle: 'Edit Employee',heading: "Edit Employee"});
+            }
+        );
+    });
+}
+
+exports.deleteEmployee = (req,res)=>{
+    let empID = req.params.id;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `UPDATE ${table1} SET Status = 'inactive' WHERE EmployeeID = ${empID};`,
+            [table1,empID],
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                res.redirect("/employees");
+            }
+        );
+    });
 }
 
 exports.employees = (req,res)=>{
@@ -262,7 +395,7 @@ exports.employees = (req,res)=>{
         console.log('Connected to DB as ID ' + connection.threadId);
 
         connection.query(
-            `SELECT * from ${table1};`,
+            `SELECT * from ${table1} WHERE Status='active'`,
             (err, result, fields) => {
                 connection.release();
 
@@ -273,7 +406,130 @@ exports.employees = (req,res)=>{
 
                 console.log("Result obtained from query and result length is",result,result.length);
 
-                res.render("employees",{FirstName,LastName,result});
+                res.render("employees",{FirstName,LastName,result, pageTitle: 'Employees'});
+            }
+        );
+    });
+}
+
+///////////////
+// Vehicles //
+/////////////
+exports.addVehicle = (req,res)=>{
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT COUNT(*) AS MaxCount FROM ${table3};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                let vehicleID = result[0].MaxCount;
+                res.render("add-vehicle",{Model: undefined, Manufacturer: undefined, VehicleYear: undefined, Price: undefined, VehicleID: vehicleID+1, pageTitle: "Add Vehicle", heading: "Add Vehicle"});
+            }
+        );
+    });
+}
+
+exports.postAddVehicle = (req,res)=>{
+
+    let { Model, Manufacturer, VehicleYear, Price } = req.body;
+    let fromEditVehicle = req.session.fromEditVehicle;
+    let vehicleID = req.session.vehicleID;
+
+    if (!fromEditVehicle) {
+        sqlQuery = `INSERT INTO ${table3} (Model, Manufacturer, VehicleYear, Price) VALUES (?, ?, ?, ?)`;
+        queryParams = [Model, Manufacturer, VehicleYear, Price];
+    } else {
+        sqlQuery = `UPDATE ${table3}
+                    SET Model=?, Manufacturer=?, VehicleYear=?, Price = ?
+                    WHERE VehicleID=?`;
+        queryParams = [Model, Manufacturer, VehicleYear, Price, vehicleID];
+    }
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            sqlQuery,
+            queryParams,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                res.redirect("/vehicles");
+            }
+        );
+    });
+}
+
+// Show the Edit Vehicle Page
+exports.editVehicle = (req,res)=>{
+    let vehID = req.params.id;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * FROM ${table3} WHERE VehicleID = ${vehID}`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("This is result and result length",result,result.length);
+                const {Model, Manufacturer,VehicleYear, Price, VehicleID} = result[0];
+                req.session.vehicleID = VehicleID;
+                req.session.fromEditVehicle = true; 
+                res.render("add-vehicle",{VehicleID, Model,Manufacturer,VehicleYear, Price, pageTitle: 'Edit Vehicle', heading: "Edit Vehicle"});
+            }
+        );
+    });
+}
+
+exports.deleteVehicle = (req,res)=>{
+    let vehID = req.params.id;
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `UPDATE ${table3} SET Status = 'inactive' WHERE VehicleID = ${vehID};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                res.redirect("/vehicles");
             }
         );
     });
@@ -292,7 +548,7 @@ exports.vehicles = (req,res)=>{
         console.log('Connected to DB as ID ' + connection.threadId);
 
         connection.query(
-            `SELECT * from ${table3};`,
+            `SELECT * from ${table3} WHERE Status='active';`,
             (err, result, fields) => {
                 connection.release();
 
@@ -303,11 +559,166 @@ exports.vehicles = (req,res)=>{
 
                 console.log("Result obtained from query and result length is",result,result.length);
 
-                res.render("vehicles",{FirstName,LastName,result});
+                res.render("vehicles",{FirstName, LastName,result, pageTitle: 'Vehicles'});
             }
         );
     });
 }
+
+///////////////
+// Customers //
+/////////////
+exports.addCustomer = (req,res)=>{
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT COUNT(*) AS MaxCount FROM ${table2};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                let customerID = result[0].MaxCount;
+                res.render("add-customer",{FirstName: undefined, LastName: undefined, Email: undefined, Phone: undefined, Address: undefined, CustomerID: customerID+1, pageTitle: "Add Customer", heading: "Add Customer"});
+            }
+        );
+    });
+}
+
+exports.postAddCustomer = (req,res)=>{
+
+    let { FirstName, LastName, Email, Phone, Address } = req.body;
+    let fromEditCustomer = req.session.fromEditCustomer;
+    let customerID = req.session.customerID;
+
+    if (!fromEditCustomer) {
+        sqlQuery = `INSERT INTO ${table2} (FirstName, LastName, Email, Phone, Address) VALUES (?, ?, ?, ?,?)`;
+        queryParams = [FirstName, LastName, Email, Phone, Address];
+    } else {
+        sqlQuery = `UPDATE ${table2}
+                    SET FirstName=?, LastName=?, Email=?, Phone=?, Address = ?
+                    WHERE CustomerID=?`;
+        queryParams = [FirstName, LastName, Email, Phone, Address,customerID];
+    }
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            sqlQuery,
+            queryParams,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                res.redirect("/customers");
+            }
+        );
+    });
+}
+
+// Show the Edit Vehicle Page
+exports.editCustomer = (req,res)=>{
+    let cusID = req.params.id;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * FROM ${table2} WHERE CustomerID = ${cusID}`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("This is result and result length",result,result.length);
+                const {CustomerID, FirstName, LastName, Email, Phone, Address} = result[0];
+                req.session.customerID = CustomerID;
+                req.session.fromEditCustomer = true; 
+                res.render("add-customer",{CustomerID, FirstName,LastName,Email, Phone, Address, pageTitle: 'Edit Customer', heading: "Edit Customer"});
+            }
+        );
+    });
+}
+
+exports.deleteCustomer = (req,res)=>{
+    let cusID = req.params.id;
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `UPDATE ${table2} SET Status = 'inactive' WHERE CustomerID = ${cusID};`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+                res.redirect("/customers");
+            }
+        );
+    });
+}
+
+exports.customers = (req,res)=>{
+    let FirstName = req.session.FirstName;
+    let LastName = req.session.LastName;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table2} where Status='active';`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("Result obtained from query and result length is",result,result.length);
+
+                res.render("customers",{FirstName,LastName,result, pageTitle: 'Customers'});
+            }
+        );
+    });
+}
+
+
 
 exports.sales = (req,res)=>{
     let FirstName = req.session.FirstName;
@@ -354,42 +765,12 @@ exports.sales = (req,res)=>{
 
                 console.log("Result obtained from query and result length is",result,result.length);
 
-                res.render("sales",{FirstName,LastName,result});
-            }
-        );
-    });
-}
-
-exports.customers = (req,res)=>{
-    let FirstName = req.session.FirstName;
-    let LastName = req.session.LastName;
-
-    pool.getConnection((err, connection) => {
-        if (err) {
-            console.error('Error connecting to the database:', err);
-            return res.status(500).send('Internal server error');
-        }
-
-        console.log('Connected to DB as ID ' + connection.threadId);
-
-        connection.query(
-            `SELECT * from ${table2};`,
-            (err, result, fields) => {
-                connection.release();
-
-                if (err) {
-                    console.error('Error querying the database:', err);
-                    return res.status(500).send('Internal server error');
-                }
-
-                console.log("Result obtained from query and result length is",result,result.length);
-
-                res.render("customers",{FirstName,LastName,result});
+                res.render("sales",{FirstName,LastName,result,pageTitle: 'Sales'});
             }
         );
     });
 }
 
 exports.error = (req,res)=>{
-    res.render("404");
+    res.render("404",{pageTitle: 'Page Not Found'});
 }

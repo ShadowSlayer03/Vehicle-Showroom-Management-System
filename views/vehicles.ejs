@@ -1,24 +1,4 @@
-<!DOCTYPE html>
-<html :class="{ 'theme-dark': dark }" x-data="data()" lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vehicles | AutoHub Pro</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./assets/css/tailwind.output.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.1.0/remixicon.css" integrity="sha512-dUOcWaHA4sUKJgO7lxAQ0ugZiWjiDraYNeNJeRKGOIpEq4vroj1DpKcS3jP0K4Js4v6bXk31AAxAxaYt3Oi9xw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="shortcut icon" href="/assets/img/autohub-pro-logo.png" type="image/x-icon">
-    <script
-      src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js"
-      defer
-    ></script>
-    <script src="./assets/js/init-alpine.js"></script>
-  </head>
-  <body>
-    <div
+<div
       class="flex h-screen bg-gray-50 dark:bg-gray-900"
       :class="{ 'overflow-hidden': isSideMenuOpen }"
     >
@@ -294,11 +274,21 @@
               </div>
               <span>View more &RightArrow;</span>
             </a>
+            <div class="flex justify-between items-center">
             <h4
-            class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300"
+            class="mb-4 text-xl font-semibold text-gray-600 dark:text-gray-300"
           >
             View all Vehicles:
-          </h4>
+            </h4>
+              <div class="px-6 my-6">
+            <a href="/add-vehicle"
+              class="flex items-center justify-between w-full px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
+            >
+              Add Vehicle
+              <span class="ml-2" aria-hidden="true">+</span>
+            </a>
+              </div>
+            </div>
           <div class="w-full overflow-hidden rounded-lg shadow-xs">
             <div class="w-full overflow-x-auto">
               <table class="w-full whitespace-no-wrap">
@@ -381,5 +371,3 @@
         </main>
       </div>
     </div>
-  </body>
-</html>

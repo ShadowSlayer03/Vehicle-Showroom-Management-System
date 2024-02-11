@@ -4,10 +4,13 @@ let myForm = document.querySelector("#myForm");
 let submitBtn = document.querySelector("#submit-button");
 let warning = document.getElementById("warning");
 
-submitBtn.addEventListener("click",()=>{
-    if(pass.textContent===repeatPass.textContent)
-    myForm.submit();
-    else{
+submitBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    console.log(pass.value, repeatPass.value);
+    if (pass.value === repeatPass.value) {
+        myForm.submit();
+    } else {
         warning.hidden = false;
     }
 });
