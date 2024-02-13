@@ -14,28 +14,33 @@ router.get("/create-account",mainController.createAccount);
 router.post("/create-account",mainController.postCreateAccount);
 
 router.get("/create-employee",requireLogin,mainController.createEmployee);
-router.post("/create-employee",mainController.postCreateEmployee);
+router.post("/create-employee",requireLogin,mainController.postCreateEmployee);
 
-router.get("/edit-employee/:id",mainController.editEmployee);
-router.get("/delete-employee/:id",mainController.deleteEmployee);
+router.get("/edit-employee/:id",requireLogin,mainController.editEmployee);
+router.get("/delete-employee/:id",requireLogin,mainController.deleteEmployee);
 
-router.get("/add-vehicle",mainController.addVehicle);
-router.post("/add-vehicle",mainController.postAddVehicle);
+router.get("/add-vehicle",requireLogin,mainController.addVehicle);
+router.post("/add-vehicle",requireLogin,mainController.postAddVehicle);
 
-router.get("/edit-vehicle/:id",mainController.editVehicle);
-router.get("/delete-vehicle/:id",mainController.deleteVehicle);
+router.get("/edit-vehicle/:id",requireLogin,mainController.editVehicle);
+router.get("/delete-vehicle/:id",requireLogin,mainController.deleteVehicle);
 
-router.get("/add-customer",mainController.addCustomer);
-router.post("/add-customer",mainController.postAddCustomer);
+router.get("/add-customer",requireLogin,mainController.addCustomer);
+router.post("/add-customer",requireLogin,mainController.postAddCustomer);
 
-router.get("/edit-customer/:id",mainController.editCustomer);
-router.get("/delete-customer/:id",mainController.deleteCustomer);
+router.get("/edit-customer/:id",requireLogin,mainController.editCustomer);
+router.get("/delete-customer/:id",requireLogin,mainController.deleteCustomer);
 
-router.get("/add-sale",mainController.addSale);
-router.post("/add-sale",mainController.postAddSale);
+router.get("/add-sale",requireLogin,mainController.addSale);
+router.post("/add-sale",requireLogin,mainController.postAddSale);
 
-router.get("/edit-sale/:id",mainController.editSale);
-router.get("/delete-sale/:id",mainController.deleteSale);
+router.get("/edit-sale/:id",requireLogin,mainController.editSale);
+router.get("/delete-sale/:id",requireLogin,mainController.deleteSale);
+
+router.get("/employees/search",requireLogin,mainController.searchEmployees);
+router.get("/vehicles/search",requireLogin,mainController.searchVehicles);
+router.get("/customers/search",requireLogin,mainController.searchCustomers);
+router.get("/sales/search",requireLogin,mainController.searchSales);
 
 router.get("/employees",requireLogin,mainController.employees);
 router.get("/vehicles",requireLogin,mainController.vehicles);

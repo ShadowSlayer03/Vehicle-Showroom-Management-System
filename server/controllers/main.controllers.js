@@ -278,13 +278,12 @@ exports.createAccount = (req,res)=>{
     res.render("create-account",{pageTitle: 'Create Account'});
 }
 
-exports.postCreateAccount = (req,res)=>{
+exports.postCreateAccount = (req, res) => {
     const { email, password } = req.body;
 
     const hashPassword = (password) => {
-        return bcrypt.hashSync(password, 10);
+        return bcrypt.hash(password, 10); // Use asynchronous bcrypt.hash
     }
-        
 
     pool.getConnection((err, connection) => {
         if (err) {
@@ -294,38 +293,50 @@ exports.postCreateAccount = (req,res)=>{
 
         console.log('Connected to DB as ID ' + connection.threadId);
 
-        let hashedPassword = hashPassword(password);
+        hashPassword(password)
+            .then((hashedPassword) => {
+                connection.query(
+                    `INSERT INTO ${table6} (Email, Password) VALUES (?, ?);`,
+                    [email, hashedPassword],
+                    (err, result, fields) => {
+                        if (err) {
+                            console.error('Error querying the database:', err);
+                            connection.release();
+                            return res.status(500).send('Internal server error');
+                        }
 
-        connection.query(
-            `INSERT INTO ${table6} (email,password) VALUES('${email}','${hashedPassword}');`,
-            (err, result, fields) => {
+                        // Select from database after successful insertion
+                        connection.query(
+                            `SELECT * FROM ${table6} WHERE Email = ?;`,
+                            [email],
+                            (err, result, fields) => {
+                                connection.release();
+                                if (err) {
+                                    console.error('Error querying the database:', err);
+                                    return res.status(500).send('Internal server error');
+                                }
 
-                if (err) {
-                    console.error('Error querying the database:', err);
-                    return res.status(500).send('Internal server error');
-                }
-            }
-        );
+                                if (result.length === 0) {
+                                    return res.status(404).send('User not found'); // Handle case where user is not found
+                                }
 
-        connection.query(
-            `SELECT * FROM ${table6} WHERE Email='${email}' AND Password='${password}';`,
-            (err, result, fields) => {
+                                req.session.emailVal = result[0].Email;
+                                req.session.employeeID = result[0].EmployeeID;
+                                req.session.fromCreateAccount = true;
+                                res.redirect("/create-employee");
+                            }
+                        );
+                    }
+                );
+            })
+            .catch((error) => {
+                console.error('Error hashing password:', error);
                 connection.release();
-
-                if (err) {
-                    console.error('Error querying the database:', err);
-                    return res.status(500).send('Internal server error');
-                }
-
-                console.log("Result obtained from query and result length is",result,result.length);
-                req.session.emailVal = result[0].Email;
-                req.session.employeeID = result[0].EmployeeID;
-                req.session.fromCreateAccount = true;
-                res.redirect("/create-employee");
-            }
-        );
+                return res.status(500).send('Internal server error');
+            });
     });
 }
+
 
 // Shows the Edit Employee Page
 exports.editEmployee = (req,res)=>{
@@ -1033,6 +1044,205 @@ exports.sales = (req,res)=>{
         );
     });
 }
+
+exports.searchEmployees = (req,res)=>{
+    const firstname = req.query.firstname;  // First name from query
+    const lastname = req.query.lastname;  // Last name from query
+    let FirstName = req.session.FirstName; // First Name of user logged in 
+    let LastName = req.session.LastName; // Last Name of user logged in 
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table1} WHERE FirstName LIKE '%${firstname}%' AND LastName LIKE '%${lastname}%'`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log(result,result.length);
+                res.render("employees",{FirstName,LastName,result, pageTitle: 'Employees'});
+            }
+        );
+    });
+    
+}
+
+exports.searchVehicles = (req,res)=>{
+    const model = req.query.model // Model name from query
+    let FirstName = req.session.FirstName; // First Name of user logged in 
+    let LastName = req.session.LastName; // Last Name of user logged in 
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table3} WHERE Model LIKE '%${model}%'`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log(result,result.length);
+                res.render("vehicles",{FirstName,LastName,result, pageTitle: 'Vehicles'});
+            }
+        );
+    });
+}
+
+exports.searchCustomers = (req,res)=>{
+    const firstname = req.query.firstname;  // First name from query
+    const lastname = req.query.lastname;  // Last name from query
+    let FirstName = req.session.FirstName; // First Name of user logged in 
+    let LastName = req.session.LastName; // Last Name of user logged in 
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT * from ${table2} WHERE FirstName LIKE '%${firstname}%' AND LastName LIKE '%${lastname}%'`,
+            (err, result, fields) => {
+                connection.release();
+
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log(result,result.length);
+                res.render("customers",{FirstName,LastName,result, pageTitle: 'Customers'});
+            }
+        );
+    });
+}
+
+exports.searchSales = (req, res) => {
+    const manufacturer = req.query.manufacturer;  // Manufacturer from query
+    const model = req.query.model;  // Model from query
+    let FirstName = req.session.FirstName; // First Name of user logged in 
+    let LastName = req.session.LastName; // Last Name of user logged in 
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('Error connecting to the database:', err);
+            return res.status(500).send('Internal server error');
+        }
+
+        console.log('Connected to DB as ID ' + connection.threadId);
+
+        connection.query(
+            `SELECT VehicleID FROM ${table3} WHERE Manufacturer LIKE '%${manufacturer}%' AND Model LIKE '%${model}%';`,
+            (err, result, fields) => {
+                connection.release();
+                if (err) {
+                    console.error('Error querying the database:', err);
+                    return res.status(500).send('Internal server error');
+                }
+
+                console.log("This is result and result length", result, result.length);
+                if (!result.length) {
+                    // No rows found
+                    return res.render("sales", { FirstName, LastName, result, pageTitle: 'Sales' });
+                }
+
+                const vehicleID = result[0].VehicleID;
+
+                pool.getConnection((err, connection) => {
+                    if (err) {
+                        console.error('Error connecting to the database:', err);
+                        return res.status(500).send('Internal server error');
+                    }
+
+                    console.log('Connected to DB as ID ' + connection.threadId);
+
+                    connection.query(
+                        `SELECT SaleID FROM ${table4} WHERE VehicleID=${vehicleID}`,
+                        (err, result, fields) => {
+                            connection.release();
+
+                            if (err) {
+                                console.error('Error querying the database:', err);
+                                return res.status(500).send('Internal server error');
+                            }
+
+                            console.log("Result obtained from query and result length is", result, result.length);
+                            const saleID = result.length ? result[0].SaleID : null;
+
+                            if (!saleID) {
+                                // No sale found for the vehicle
+                                return res.render("sales", { FirstName, LastName, result, pageTitle: 'Sales' });
+                            }
+
+                            // Nested getConnection call
+                            pool.getConnection((err, connection) => {
+                                if (err) {
+                                    console.error('Error connecting to the database:', err);
+                                    return res.status(500).send('Internal server error');
+                                }
+
+                                console.log('Connected to DB as ID ' + connection.threadId);
+
+                                let sqlQuery =
+                                    `SELECT v.Model AS VehicleModel,
+                                    v.Manufacturer AS VehicleManufacturer,
+                                    e.FirstName AS EmployeeFirstName,
+                                    e.LastName AS EmployeeLastName,
+                                    c.FirstName AS CustomerFirstName,
+                                    c.LastName AS CustomerLastName,
+                                    s.SaleID,
+                                    s.SaleDate,
+                                    s.SaleAmount
+                                    FROM Sales s
+                                    INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
+                                    INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
+                                    INNER JOIN Customers c ON s.CustomerID = c.CustomerID
+                                    WHERE s.Status = 'confirmed' AND s.SaleID=${saleID};`;
+                                let queryWithoutNewlines = sqlQuery.replace(/\n/g, "");
+
+                                connection.query(
+                                    queryWithoutNewlines,
+                                    (err, result, fields) => {
+                                        connection.release();
+
+                                        if (err) {
+                                            console.error('Error querying the database:', err);
+                                            return res.status(500).send('Internal server error');
+                                        }
+
+                                        console.log("Result obtained from query and result length is", result, result.length);
+
+                                        res.render("sales", { FirstName, LastName, result, pageTitle: 'Sales' });
+                                    }
+                                );
+                            });
+                        }
+                    );
+                });
+            }
+        );
+
+    });
+}
+
 
 ///////////////
 // Error //

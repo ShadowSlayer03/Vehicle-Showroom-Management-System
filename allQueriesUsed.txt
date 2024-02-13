@@ -1,0 +1,61 @@
+1. SELECT FirstName, LastName, Email, Phone, Position, Salary FROM ${table1} WHERE Email = ?
+2. SELECT COUNT(*) AS employeeCount FROM ${table1} GROUP BY EmployeeID
+3. SELECT COUNT(*) AS vehicleCount FROM ${table3} GROUP BY VehicleID
+4. SELECT COUNT(*) AS saleCount FROM ${table4} GROUP BY SaleID
+5. SELECT COUNT(*) AS customerCount FROM ${table2} GROUP BY CustomerID
+6. SELECT * FROM ${table6} WHERE Email = ? LIMIT 1
+
+7. INSERT INTO ${table1} (FirstName, LastName, Email, Address, Phone, Position, Salary) 
+   VALUES (?, ?, ?, ?, ?, ?, ?)
+
+8. UPDATE ${table1}
+   SET FirstName=?, LastName=?, Phone=?, position=?, salary=?, address=?
+   WHERE EmployeeID=?
+
+9.  INSERT INTO ${table6} (email,password) VALUES('${email}','${hashedPassword}')
+10. SELECT * FROM ${table6} WHERE Email='${email}' AND Password='${password}'
+11. SELECT * FROM ${table1} WHERE EmployeeID = ${empID}
+12. UPDATE ${table1} SET Status = 'inactive' WHERE EmployeeID = ${empID};
+13. SELECT * from ${table1} WHERE Status='active'
+
+14. SELECT MAX(VehicleID) AS MaxVehicleID FROM ${table3}
+15. INSERT INTO ${table3} (Model, Manufacturer, VehicleYear, Price) VALUES (?, ?, ?, ?)
+
+16. UPDATE ${table3}
+    SET Model=?, Manufacturer=?, VehicleYear=?, Price = ?
+    WHERE VehicleID=?
+
+17. SELECT * FROM ${table3} WHERE VehicleID = ${vehID}
+18. UPDATE ${table3} SET Status = 'inactive' WHERE VehicleID = ${vehID}
+19. SELECT * from ${table3} WHERE Status='active'
+20. SELECT MAX(CustomerID) AS MaxCustomerID FROM ${table2}
+21. INSERT INTO ${table2} (FirstName, LastName, Email, Phone, Address) VALUES (?, ?, ?, ?,?)
+
+22. UPDATE ${table2}
+    SET FirstName=?, LastName=?, Email=?, Phone=?, Address = ?
+    WHERE CustomerID=?
+
+23. SELECT * FROM ${table2} WHERE CustomerID = ${cusID}
+24. UPDATE ${table2} SET Status = 'inactive' WHERE CustomerID = ${cusID};
+25. SELECT * from ${table2} where Status='active'    
+26. SELECT MAX(SaleID) AS MaxSaleID FROM ${table4}
+27. SELECT * from ${table1} WHERE FirstName LIKE '%${firstname}%' AND LastName LIKE '%${lastname}%
+28. SELECT * from ${table3} WHERE Model LIKE '%${model}%
+29. SELECT * from ${table2} WHERE FirstName LIKE '%${firstname}%' AND LastName LIKE '%${lastname}%
+30. SELECT VehicleID FROM ${table3} WHERE Manufacturer LIKE '%${manufacturer}%' AND Model LIKE '%${model}%
+31. SELECT SaleID FROM ${table4} WHERE VehicleID=${vehicleID}
+
+32. SELECT v.Model AS VehicleModel,
+                                    v.Manufacturer AS VehicleManufacturer,
+                                    e.FirstName AS EmployeeFirstName,
+                                    e.LastName AS EmployeeLastName,
+                                    c.FirstName AS CustomerFirstName,
+                                    c.LastName AS CustomerLastName,
+                                    s.SaleID,
+                                    s.SaleDate,
+                                    s.SaleAmount
+                                    FROM Sales s
+                                    INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
+                                    INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
+                                    INNER JOIN Customers c ON s.CustomerID = c.CustomerID
+                                    WHERE s.Status = 'confirmed' AND s.SaleID=${saleID};
