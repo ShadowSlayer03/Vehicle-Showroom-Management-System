@@ -3,7 +3,8 @@ CREATE TABLE vehicles (
   Manufacturer VARCHAR(50) NOT NULL,
   VehicleYear INT,
   Price DECIMAL(10,2),
-  VehicleID INT PRIMARY KEY AUTO_INCREMENT
+  VehicleID INT PRIMARY KEY AUTO_INCREMENT,
+  Status VARCHAR(20) DEFAULT 'active'
 );
 
 CREATE TABLE customers (
@@ -12,7 +13,8 @@ CREATE TABLE customers (
   LastName VARCHAR(50) NOT NULL,
   Email VARCHAR(100),
   Phone VARCHAR(20),
-  Address VARCHAR(255)
+  Address VARCHAR(255),
+  Status VARCHAR(20) DEFAULT 'active'
 );
 
 CREATE TABLE login(
@@ -26,9 +28,11 @@ CREATE TABLE employees (
   FirstName VARCHAR(50) NOT NULL,
   LastName VARCHAR(50) NOT NULL,
   Email VARCHAR(100),
+  Address TEXT,
   Phone VARCHAR(20),
   Position VARCHAR(50),
-  Salary DECIMAL(10,2),
+  Salary DECIMAL(10,0),
+  Status VARCHAR(20) DEFAULT 'active',
   FOREIGN KEY (EmployeeID) REFERENCES login(EmployeeID)
 );
 
@@ -39,6 +43,7 @@ CREATE TABLE sales (
   EmployeeID INT,
   SaleDate DATE,
   SaleAmount DECIMAL(10,2),
+  Status VARCHAR(20) DEFAULT 'confirmed',
   FOREIGN KEY (VehicleID) REFERENCES vehicles(VehicleID),
   FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID),
   FOREIGN KEY (EmployeeID) REFERENCES employees(EmployeeID)

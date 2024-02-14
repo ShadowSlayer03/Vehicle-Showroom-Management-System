@@ -13,7 +13,7 @@ router.get("/logout",mainController.logout);
 router.get("/create-account",mainController.createAccount);
 router.post("/create-account",mainController.postCreateAccount);
 
-router.get("/create-employee",requireLogin,mainController.createEmployee);
+router.get("/create-employee",mainController.createEmployee);
 router.post("/create-employee",mainController.postCreateEmployee);
 
 router.get("/edit-employee/:id",requireLogin,mainController.editEmployee);
