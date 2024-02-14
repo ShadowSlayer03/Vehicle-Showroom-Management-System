@@ -1,13 +1,13 @@
-CREATE TABLE Vehicles (
+CREATE TABLE vehicles (
   Model VARCHAR(50) NOT NULL,
   Manufacturer VARCHAR(50) NOT NULL,
   VehicleYear INT,
   Price DECIMAL(10,2),
-  VehicleID INT PRIMARY KEY
+  VehicleID INT PRIMARY KEY AUTO_INCREMENT
 );
 
-CREATE TABLE Customers (
-  CustomerID INT PRIMARY KEY,
+CREATE TABLE customers (
+  CustomerID INT PRIMARY KEY AUTO_INCREMENT,
   FirstName VARCHAR(50) NOT NULL,
   LastName VARCHAR(50) NOT NULL,
   Email VARCHAR(100),
@@ -15,24 +15,32 @@ CREATE TABLE Customers (
   Address VARCHAR(255)
 );
 
-CREATE TABLE Employees (
-  EmployeeID INT PRIMARY KEY,
+CREATE TABLE login(
+    EmployeeID INT PRIMARY KEY AUTO_INCREMENT, 
+    Email VARCHAR(50),
+    Password VARCHAR(100)
+);
+
+CREATE TABLE employees (
+  EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
   FirstName VARCHAR(50) NOT NULL,
   LastName VARCHAR(50) NOT NULL,
   Email VARCHAR(100),
   Phone VARCHAR(20),
   Position VARCHAR(50),
-  Salary DECIMAL(10,2)
+  Salary DECIMAL(10,2),
+  FOREIGN KEY (EmployeeID) REFERENCES login(EmployeeID)
 );
 
-CREATE TABLE Sales (
-  SaleID INT PRIMARY KEY,
+CREATE TABLE sales (
+  SaleID INT PRIMARY KEY AUTO_INCREMENT,
   VehicleID INT,
   CustomerID INT,
   EmployeeID INT,
   SaleDate DATE,
   SaleAmount DECIMAL(10,2),
-  FOREIGN KEY (VehicleID) REFERENCES Vehicles(VehicleID),
-  FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID),
-  FOREIGN KEY (EmployeeID) REFERENCES Employees(EmployeeID)
+  FOREIGN KEY (VehicleID) REFERENCES vehicles(VehicleID),
+  FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID),
+  FOREIGN KEY (EmployeeID) REFERENCES employees(EmployeeID)
 );
+
