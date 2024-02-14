@@ -233,8 +233,7 @@ exports.postCreateEmployee = (req, res) => {
     console.log("The req.body",req.body);
 
     if (fromCreateAccount) {
-        sqlQuery = `INSERT INTO ${table1} (FirstName, LastName, Email, Address, Phone, Position, Salary) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        sqlQuery = `INSERT INTO ${table1} (FirstName, LastName, Email, Address, Phone, Position, Salary) VALUES (?, ?, ?, ?, ?, ?, ?)`;
         queryParams = [FirstName, LastName, email, Address, Phone, Position, Salary];
     } else {
         sqlQuery = `UPDATE ${table1}
@@ -281,8 +280,9 @@ exports.createAccount = (req,res)=>{
 exports.postCreateAccount = (req, res) => {
     const { email, password } = req.body;
 
-    const hashPassword = (password) => {
-        return bcrypt.hash(password, 10); // Use asynchronous bcrypt.hash
+    const hashPassword = async(password) => {
+        let pass = await bcrypt.hash(password, 10); // Use asynchronous bcrypt.hash
+        return pass;
     }
 
     pool.getConnection((err, connection) => {
@@ -323,6 +323,7 @@ exports.postCreateAccount = (req, res) => {
                                 req.session.emailVal = result[0].Email;
                                 req.session.employeeID = result[0].EmployeeID;
                                 req.session.fromCreateAccount = true;
+                                console.log("redirecting to create employee page");
                                 res.redirect("/create-employee");
                             }
                         );
@@ -814,7 +815,7 @@ exports.addSale = (req, res) => {
                                                     empValues = result;
 
                                                     // Once all queries are done, you can send the response
-                                                    res.render("add-sale",{SaleID: saleID+1, custValues, vehicleValues, empValues, SaleDate: undefined, SaleAmount: undefined, pageTitle: "Add Sale", heading: "Add Sale"})
+                                                    res.render("add-sale",{SaleID: saleID+1, CustomerID: undefined, VehicleID: undefined,EmployeeID: undefined, custValues, vehicleValues, empValues, SaleDate: undefined, SaleAmount: undefined, pageTitle: "Add Sale", heading: "Add Sale"})
                                                 }
                                             );
                                         });
