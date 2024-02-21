@@ -1154,9 +1154,9 @@ exports.sales = (req,res)=>{
         s.SaleDate,
         s.SaleAmount
         FROM ${table4} s
-        INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
-        INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
-        INNER JOIN Customers c ON s.CustomerID = c.CustomerID
+        INNER JOIN ${table3} v ON s.VehicleID = v.VehicleID
+        INNER JOIN ${table1} e ON s.EmployeeID = e.EmployeeID
+        INNER JOIN ${table2} c ON s.CustomerID = c.CustomerID
         WHERE s.Status = 'confirmed';`;
     let queryWithoutNewlines = sqlQuery.replace(/\n/g, "");
     console.log(queryWithoutNewlines);
@@ -1364,9 +1364,9 @@ exports.searchSales = (req, res) => {
                         s.SaleDate,
                         s.SaleAmount
                         FROM ${table4} s
-                        INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
-                        INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
-                        INNER JOIN Customers c ON s.CustomerID = c.CustomerID
+                        INNER JOIN ${table3} v ON s.VehicleID = v.VehicleID
+                        INNER JOIN ${table1} e ON s.EmployeeID = e.EmployeeID
+                        INNER JOIN ${table2} c ON s.CustomerID = c.CustomerID
                         WHERE s.Status = 'confirmed' AND s.SaleID=?`;
                         const nestedValues = [saleID];
 
