@@ -1153,7 +1153,7 @@ exports.sales = (req,res)=>{
         s.SaleID,
         s.SaleDate,
         s.SaleAmount
-        FROM Sales s
+        FROM ${table4} s
         INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
         INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
         INNER JOIN Customers c ON s.CustomerID = c.CustomerID
@@ -1363,7 +1363,7 @@ exports.searchSales = (req, res) => {
                         s.SaleID,
                         s.SaleDate,
                         s.SaleAmount
-                        FROM Sales s
+                        FROM ${table4} s
                         INNER JOIN Vehicles v ON s.VehicleID = v.VehicleID
                         INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID
                         INNER JOIN Customers c ON s.CustomerID = c.CustomerID
