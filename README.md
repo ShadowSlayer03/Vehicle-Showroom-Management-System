@@ -12,7 +12,7 @@ This application facilitates managing various aspects of a vehicle showroom, inc
 * **Employees:** Management of employee accounts storing info like their name, phone, email, password, position and salary.
 
 ## Live Preview 🌟
-This DBMS project is hosted at [https://autohub-pro-vehicle-management-system.onrender.com](https://autohub-pro-vehicle-management-system.onrender.com).
+This DBMS project is hosted at [https://autohub-pro-vehicle-management-system.onrender.com](https://autohub-pro.onrender.com).
 
 ## Technologies Used 🚀
 
